@@ -5,11 +5,35 @@ import CartItem from "../components/CartItem";
 import CurrencyFormat from "react-currency-format";
 import { calculateBasePrice, calculateDiscount, calculateINR } from "../utils/currencyConv";
 import ShieldIcon from "@heroicons/react/solid/ShieldCheckIcon";
+import { loadStripe } from "@stripe/stripe-js";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 const Cart = () => {
 	const cart = useSelector(selectCart),
 		cartSize = useSelector(selectCartSize),
-		cartAmount = useSelector(selectCartAmount);
+		cartAmount = useSelector(selectCartAmount),
+		{ data } = useSession();
+
+	const createPaymentSession = async () => {
+		const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
+
+		const paymentSession = await fetch("/api/payment", {
+			method: "POST",
+			body: JSON.stringify({ items: cart, email: data.user.email }),
+		})
+			.then((res) => res.json())
+			.then((res) => res)
+			.catch((err) => console.log(err));
+
+		console.log(paymentSession);
+
+		const result = await stripe.redirectToCheckout({
+			sessionId: paymentSession.id,
+		});
+		if (result.error) alert(result.error.message);
+	};
+
 	return (
 		<div className="pt-16 min-h-screen bg-gray-200">
 			<Head>
@@ -21,69 +45,91 @@ const Cart = () => {
 				/>
 			</Head>
 			<main className="py-2 md:py-10 max-w-7xl mx-2 md:mx-auto flex flex-col-reverse md:flex-row justify-center md:space-x-4">
-				{/* items */}
-				<div className="md:flex-[0.7] bg-white rounded-md mt-4 md:mt-0">
-					<div className="py-4 px-6">
-						<h4 className="text-xl font-medium">My Cart ({cartSize})</h4>
-					</div>
-					{cart?.map((c) => (
-						<CartItem key={c?.id} item={c} />
-					))}
-				</div>
-				{/* pricing */}
-				<div className="md:flex-[0.3]">
-					<div className="md:sticky md:top-[4.5rem]">
-						<div className="bg-white rounded-md h-max py-4">
-							<div className="border-b border-dashed pb-4 px-6">
-								<h4 className="text-xl font-medium">Price Details</h4>
-							</div>
+				{cartSize > 0 ? (
+					<>
+						{/* items */}
+						<div className="md:flex-[0.7] bg-white shadow-lg rounded-md mt-4 md:mt-0">
 							<div className="py-4 px-6">
-								<div className="my-4 w-full flex items-center justify-between">
-									<p className="text-lg">Price ({cartSize} items)</p>
-									<CurrencyFormat
-										className="text-lg"
-										prefix="₹"
-										value={calculateBasePrice(Number(cartAmount))}
-										thousandSeparator=","
-										displayType="text"
-										allowNegative={false}
-									/>
+								<h4 className="text-xl font-medium">My Cart ({cartSize})</h4>
+							</div>
+							{cart?.map((c) => (
+								<CartItem key={c?.id} item={c} />
+							))}
+						</div>
+						{/* pricing */}
+						<div className="md:flex-[0.3]">
+							<div className="md:sticky md:top-[4.5rem]">
+								<div className="bg-white rounded-md h-max py-4 shadow-lg">
+									<div className="border-b border-dashed pb-4 px-6">
+										<h4 className="text-xl font-medium">Price Details</h4>
+									</div>
+									<div className="py-4 px-6">
+										<div className="my-4 w-full flex items-center justify-between">
+											<p className="text-lg">Price ({cartSize} items)</p>
+											<CurrencyFormat
+												className="text-lg"
+												prefix="₹"
+												value={calculateBasePrice(Number(cartAmount))}
+												thousandSeparator=","
+												displayType="text"
+												allowNegative={false}
+											/>
+										</div>
+										<div className="my-4 w-full flex items-center justify-between">
+											<p className="text-lg">Discount</p>
+											<CurrencyFormat
+												className="text-lg text-green-700"
+												prefix="- ₹"
+												value={calculateDiscount(Number(cartAmount))}
+												thousandSeparator=","
+												displayType="text"
+												allowNegative={false}
+											/>
+										</div>
+										<div className="my-4 w-full flex items-center justify-between">
+											<p className="text-lg">Delivery Charges</p>
+											<p className="text-lg text-green-700">FREE</p>
+										</div>
+										<div className="border-y border-gray-400 border-dashed py-4 flex items-center justify-between text-lg font-medium">
+											<p>Total Amount</p>
+											<CurrencyFormat
+												className=""
+												prefix="₹"
+												value={calculateINR(Number(cartAmount))}
+												thousandSeparator=","
+												displayType="text"
+												allowNegative={false}
+											/>
+										</div>
+										<button onClick={createPaymentSession} className="mt-6 py-2 w-full bg-yellow-400">
+											Checkout
+										</button>
+									</div>
 								</div>
-								<div className="my-4 w-full flex items-center justify-between">
-									<p className="text-lg">Discount</p>
-									<CurrencyFormat
-										className="text-lg text-green-700"
-										prefix="- ₹"
-										value={calculateDiscount(Number(cartAmount))}
-										thousandSeparator=","
-										displayType="text"
-										allowNegative={false}
-									/>
+								<div className="hidden md:flex p-5 space-x-2 text-gray-500 font-medium items-center">
+									<ShieldIcon className="h-12" />
+									<p>Safe and Secure Payments.Easy returns.100% Authentic products.</p>
 								</div>
-								<div className="my-4 w-full flex items-center justify-between">
-									<p className="text-lg">Delivery Charges</p>
-									<p className="text-lg text-green-700">FREE</p>
-								</div>
-								<div className="border-y border-gray-400 border-dashed py-4 flex items-center justify-between text-lg font-medium">
-									<p>Total Amount</p>
-									<CurrencyFormat
-										className=""
-										prefix="₹"
-										value={calculateINR(Number(cartAmount))}
-										thousandSeparator=","
-										displayType="text"
-										allowNegative={false}
-									/>
-								</div>
-							<button className="mt-6 py-2 w-full bg-yellow-400">Checkout</button>
 							</div>
 						</div>
-						<div className="hidden md:flex p-5 space-x-2 text-gray-500 font-medium items-center">
-							<ShieldIcon className="h-12" />
-							<p>Safe and Secure Payments.Easy returns.100% Authentic products.</p>
+					</>
+				) : (
+					<div className="bg-white shadow-lg rounded-md w-full h-full">
+						<h1 className="py-4 px-6 text-2xl font-medium">My Cart</h1>
+						<div className="h-full grid place-items-center mb-10">
+							<img
+								className="max-h-[15rem]"
+								src="https://rukminim1.flixcart.com/www/800/800/promos/16/05/2019/d438a32e-765a-4d8b-b4a6-520b560971e8.png?q=90"
+								alt="empty-cart"
+							/>
+							<p className="mt-4 text-xl">Your cart is empty!</p>
+							<p className="my-1">Add items to it now.</p>
+							<Link href="/">
+								<button className="my-4 w-48 py-2 bg-blue-600 text-white text-lg font-light">Shop Now</button>
+							</Link>
 						</div>
 					</div>
-				</div>
+				)}
 			</main>
 		</div>
 	);
