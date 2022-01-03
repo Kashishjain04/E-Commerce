@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
 export default NextAuth({
+	secret: process.env.NEXTAUTH_SECRET,
 	providers: [
 		GoogleProvider({
 			clientId: process.env.GOOGLE_ID,

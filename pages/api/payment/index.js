@@ -28,8 +28,8 @@ export default async function handler(req, res) {
 		},
 		line_items: lineItems,
 		mode: "payment",
-		success_url: `${process.env.NEXTAUTH_URL}/success`,
-		cancel_url: `${process.env.NEXTAUTH_URL}/checkout`,
+		success_url: `${process.env.CLIENT_URL}/success`,
+		cancel_url: `${process.env.CLIENT_URL}/checkout`,
 		metadata: {
 			email,
 			images: JSON.stringify(items.map((item) => item.image)),
