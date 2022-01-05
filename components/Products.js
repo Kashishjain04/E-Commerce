@@ -1,22 +1,22 @@
-import { useEffect, useState } from "react";
 import ReactStars from "react-rating-stars-component";
 import { useDispatch } from "react-redux";
 import { useSession } from "next-auth/react";
 import { addToCart } from "../redux/slices/cartSlice";
 import CurrencyFormat from "react-currency-format";
 import { calculateBasePrice, calculateINR } from "../utils/currencyConv";
+import { openLoginModal } from "../redux/slices/utilsSlice";
 
-const Products = () => {
+const Products = ({products}) => {
 	const dispatch = useDispatch(),
-		{ data } = useSession(),
-		[products, setProducts] = useState([]);
+		{ data } = useSession();
 
-	useEffect(() => {
-		fetch("https://fakestoreapi.com/products")
-			.then((res) => res.json())
-			.then((json) => setProducts(json))
-			.catch((err) => console.log(err));
-	}, []);
+		const addToCartHandler = (product) => {
+			if(data?.user){
+				dispatch(addToCart({ product, user: data?.user }));
+			}else{
+				dispatch(openLoginModal());
+			}
+		}
 
 	return (
 		<div>
@@ -60,7 +60,7 @@ const Products = () => {
 							<p className="text-sm font-bold text-green-700">25% Off</p>
 						</div>
 						<button
-							onClick={() => dispatch(addToCart({ product: p, user: data?.user }))}
+							onClick={() => addToCartHandler(p)}
 							className="mt-auto w-full p-2 bg-blue-600 rounded-md text-white font-bold"
 						>
 							Add To Cart

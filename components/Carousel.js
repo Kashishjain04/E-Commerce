@@ -16,7 +16,7 @@ const Carousel = () => {
 		<div className="hidden md:block m-1 pt-1 overflow-x-hidden">
 			<div id="carouselContainer" className={`flex transition-transform duration-300`}>
 				{carouselData.map((item) => (
-					<img key={item.id} src={item.src} className="w-full" />
+					<img key={item.id} src={item.src} className="w-full" alt="carousel-slide" />
 				))}
 			</div>
 		</div>

@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectCart, selectCartAmount, selectCartSize } from "../redux/slices/cartSlice";
 import CartItem from "../components/CartItem";
 import CurrencyFormat from "react-currency-format";
@@ -8,12 +8,19 @@ import ShieldIcon from "@heroicons/react/solid/ShieldCheckIcon";
 import { loadStripe } from "@stripe/stripe-js";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { openLoginModal } from "../redux/slices/utilsSlice";
 
 const Cart = () => {
-	const cart = useSelector(selectCart),
+	const dispatch = useDispatch(),
+	 cart = useSelector(selectCart),
 		cartSize = useSelector(selectCartSize),
 		cartAmount = useSelector(selectCartAmount),
 		{ data } = useSession();
+
+		const checkoutHandler = () => {
+			if(date?.user) createPaymentSession();
+			else dispatch(openLoginModal());
+		}
 
 	const createPaymentSession = async () => {
 		const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
@@ -124,7 +131,7 @@ const Cart = () => {
 							/>
 							<p className="mt-4 text-xl">Your cart is empty!</p>
 							<p className="my-1">Add items to it now.</p>
-							<Link href="/">
+							<Link href="/" passHref>
 								<button className="my-4 w-48 py-2 bg-blue-600 text-white text-lg font-light">Shop Now</button>
 							</Link>
 						</div>

@@ -2,14 +2,22 @@
 
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { getSession } from "next-auth/react";
 
 export default async function handler(req, res) {
-    const email = req?.headers?.authorization?.slice(7);
-	const docRef = doc(db, "users", email);
-	const docSnap = await getDoc(docRef).catch(() => res.status(500));
-	if (docSnap?.exists()) {
-		res.status(200).json({ userDoc: docSnap.data() });
-	} else {
-		res.status(500);
-	}
+	const session = await getSession({ req });
+	const email = req?.headers?.authorization?.slice(7);
+	if (email === session?.user?.email) {
+		const docRef = doc(db, "users", email);
+		const docSnap = await getDoc(docRef).catch(() => res.status(500));
+		try {
+			if (docSnap?.exists()) {
+				res.status(200).json({ userDoc: docSnap.data() });
+			} else {
+				res.status(500);
+			}
+		} catch (e) {
+			return res.status(500);
+		}
+	} else return res.status(400).json({ message: "Unauthorized" });
 }
