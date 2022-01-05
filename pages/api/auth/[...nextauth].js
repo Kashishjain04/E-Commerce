@@ -13,10 +13,14 @@ export default NextAuth({
 	],
 	callbacks: {
 		async signIn({ user }) {
-			const docRef = doc(db, "users", user.email);
-			const docSnap = await getDoc(docRef);
-			if (!docSnap.exists()) setDoc(docRef, { ...user, orders: [], cart: [] }, { merge: true });
-			return { message: true };
+			try {
+				const docRef = doc(db, "users", user.email);
+				const docSnap = await getDoc(docRef);
+				if (!docSnap.exists()) setDoc(docRef, { ...user, orders: [], cart: [] }, { merge: true });
+				return { message: true };
+			} catch (error) {
+				return { message: false };
+			}
 		},
 		// async session({ session, user, token }) {
 		// 	if (user?.email) {
