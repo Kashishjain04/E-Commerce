@@ -11,16 +11,16 @@ export default NextAuth({
 			clientSecret: process.env.GOOGLE_SECRET,
 		}),
 	],
-	// callbacks: {
-	// 	async signIn({ user }) {
-	// 		try {
-	// 			const docRef = doc(db, "users", user.email);
-	// 			const docSnap = await getDoc(docRef);
-	// 			if (!docSnap.exists()) setDoc(docRef, { ...user, orders: [], cart: [] }, { merge: true });
-	// 			return { message: true };
-	// 		} catch (error) {
-	// 			return { message: false };
-	// 		}
-	// 	},		
-	// },
+	callbacks: {
+		async signIn({ user }) {
+			try {
+				const docRef = doc(db, "users", user.email);
+				const docSnap = await getDoc(docRef);
+				if (!docSnap.exists()) setDoc(docRef, { ...user, orders: [], cart: [] }, { merge: true });
+				return { message: true };
+			} catch (error) {
+				return { message: false };
+			}
+		},		
+	},
 });
