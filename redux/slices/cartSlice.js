@@ -24,9 +24,7 @@ const cartSlice = createSlice({
 			fetch("/api/cart/updateCart", {
 				method: "POST",
 				body: JSON.stringify({ user: action.payload.user, cart: state.cart }),
-			})
-				.then((res) => res.json())
-				.catch((err) => console.log(err));
+			}).catch((err) => console.log(err));
 		},
 		removeFromCart: (state, action) => {
 			const findIndex = state.cart.findIndex(c => c.id === action.payload.product.id);
@@ -38,9 +36,7 @@ const cartSlice = createSlice({
 			fetch("/api/cart/updateCart", {
 				method: "POST",
 				body: JSON.stringify({ user: action.payload.user, cart: state.cart }),
-			})
-				.then((res) => res.json())
-				.catch((err) => console.log(err));
+			}).catch((err) => console.log(err));
 		},
 	},
 });
