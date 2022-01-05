@@ -14,10 +14,10 @@ export default async function handler(req, res) {
 			if (docSnap?.exists()) {
 				res.status(200).json({ userDoc: docSnap.data() });
 			} else {
-				res.status(500);
+				res.status(500).json({error: "User not found"});
 			}
 		} catch (e) {
-			return res.status(500);
+			return res.status(500).json({error: e});
 		}
-	} else return res.status(400).json({ message: "Unauthorized" });
+	} else return res.status(400).json({ error: "Unauthorized" });
 }
